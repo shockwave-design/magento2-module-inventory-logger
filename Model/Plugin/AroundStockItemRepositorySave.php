@@ -11,11 +11,12 @@ use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\CatalogInventory\Api\Data\StockItemInterface;
 use Magento\CatalogInventory\Api\StockConfigurationInterface;
+use Magento\CatalogInventory\Api\StockItemRepositoryInterface;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\StoreManagerInterface;
 
-class AroundProductRepositorySave
+class AroundStockItemRepositorySave
 {
     /**
      * @var StockRegistryInterface
@@ -51,23 +52,26 @@ class AroundProductRepositorySave
     /**
      * TODO
      *
-     * @param \Magento\Catalog\Api\ProductRepositoryInterface $subject
+     * @param StockItemInterface $stockItem
      * @param callable|\Closure $proceed
-     * @param \Magento\Catalog\Api\Data\ProductInterface $product
-     * @param bool $saveOptions
      * @return ProductInterface
      */
     public function aroundSave(
-        \Magento\Catalog\Api\ProductRepositoryInterface $subject,
+        \Magento\CatalogInventory\Model\Stock\StockItemRepository\Interceptor $stockItemRepository,
         \Closure $proceed,
-        \Magento\Catalog\Api\Data\ProductInterface $product,
-        $saveOptions = false
+        \Magento\CatalogInventory\Api\Data\StockItemInterface $stockItem
     ) {
+
+        $stockItemId = $stockItem->getItemId();
+
+        /** @var \Magento\CatalogInventory\Api\Data\StockItemInterface $oldStockItem */
+        $oldQty = $stockItemRepository->get($stockItemId)->getQty();
+        $newQty = $stockItem->getQty();
 
         /**
          * @var \Magento\Catalog\Api\Data\ProductInterface $result
          */
-        $result = $proceed($product, $saveOptions);
+        $result = $proceed($stockItem);
 
         return $result;
     }
